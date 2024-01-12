@@ -1,0 +1,7 @@
+name: LicenceChecker
+version: '${project.version}'
+main: net.kayega.LicenceChecker
+api-version: '1.20'
+load: STARTUP
+authors: [Kayega]
+website: https://mineala.com
