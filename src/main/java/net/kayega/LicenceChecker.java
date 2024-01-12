@@ -1,5 +1,12 @@
 package net.kayega;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -8,7 +15,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class LicenceChecker extends JavaPlugin {
@@ -31,28 +40,24 @@ public final class LicenceChecker extends JavaPlugin {
         }
 
         try {
-            URL url = new URL("https://api.mineala.com/lisance/ip");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestProperty("Content-Type", "application/json");
-            con.setRequestMethod("POST");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("lisance_key", licenceKey);
-            parameters.put("ip", ipAddress);
+            HttpPost post = new HttpPost("https://api.mineala.com/lisance/ip");
 
-            con.setDoOutput(true);
-            DataOutputStream out = new DataOutputStream(con.getOutputStream());
-            out.writeBytes(ParameterStringBuilder.getParamsString(parameters));
-            out.flush();
-            out.close();
+            // add request parameter, form parameters
+            List<NameValuePair> urlParameters = new ArrayList<>();
+            urlParameters.add(new BasicNameValuePair("lisance_key", licenceKey));
+            urlParameters.add(new BasicNameValuePair("ip", ipAddress));
 
-            int status = con.getResponseCode();
-            switch (status) {
-                case 200:
-                    return true;
-                case 201:
-                    return false;
+            post.setEntity(new UrlEncodedFormEntity(urlParameters));
+
+            try (CloseableHttpClient httpClient = HttpClients.createDefault();
+                 CloseableHttpResponse response = httpClient.execute(post)) {
+                switch (response.getStatusLine().getStatusCode()) {
+                    case 200:
+                        return true;
+                    case 201:
+                        return false;
+                }
             }
-            con.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -70,28 +75,24 @@ public final class LicenceChecker extends JavaPlugin {
         Bukkit.getServer().getConsoleSender().sendMessage("§7§[aLicenceChecker§7] §eLicence status getting...");
 
         try {
-            URL url = new URL("https://api.mineala.com/lisance/status");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestProperty("Content-Type", "application/json");
-            con.setRequestMethod("POST");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("lisance_key", licenceKey);
-            parameters.put("ip", ipAddress);
+            HttpPost post = new HttpPost("https://api.mineala.com/lisance/status");
 
-            con.setDoOutput(true);
-            DataOutputStream out = new DataOutputStream(con.getOutputStream());
-            out.writeBytes(ParameterStringBuilder.getParamsString(parameters));
-            out.flush();
-            out.close();
+            // add request parameter, form parameters
+            List<NameValuePair> urlParameters = new ArrayList<>();
+            urlParameters.add(new BasicNameValuePair("lisance_key", licenceKey));
+            urlParameters.add(new BasicNameValuePair("ip", ipAddress));
 
-            int status = con.getResponseCode();
-            switch (status) {
-                case 200:
-                    return LicenceStatus.ACTIVE;
-                case 201:
-                    return LicenceStatus.NOT_ACTIVE;
+            post.setEntity(new UrlEncodedFormEntity(urlParameters));
+
+            try (CloseableHttpClient httpClient = HttpClients.createDefault();
+                 CloseableHttpResponse response = httpClient.execute(post)) {
+                switch (response.getStatusLine().getStatusCode()) {
+                    case 200:
+                        return LicenceStatus.ACTIVE;
+                    case 201:
+                        return LicenceStatus.NOT_ACTIVE;
+                }
             }
-            con.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
             return LicenceStatus.ERROR;
@@ -107,36 +108,32 @@ public final class LicenceChecker extends JavaPlugin {
         }
 
         try {
-            URL url = new URL("https://api.mineala.com/lisance/activate");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestProperty("Content-Type", "application/json");
-            con.setRequestMethod("POST");
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("lisance_key", licenceKey);
-            parameters.put("ip", ipAddress);
+            HttpPost post = new HttpPost("https://api.mineala.com/lisance/activate");
 
-            con.setDoOutput(true);
-            DataOutputStream out = new DataOutputStream(con.getOutputStream());
-            out.writeBytes(ParameterStringBuilder.getParamsString(parameters));
-            out.flush();
-            out.close();
+            // add request parameter, form parameters
+            List<NameValuePair> urlParameters = new ArrayList<>();
+            urlParameters.add(new BasicNameValuePair("lisance_key", licenceKey));
+            urlParameters.add(new BasicNameValuePair("ip", ipAddress));
 
-            int status = con.getResponseCode();
-            switch (status) {
-                case 401:
-                    Bukkit.getServer().getConsoleSender().sendMessage("§7§[aLicenceChecker§7] §cLicence activation failed!");
-                    break;
-                case 404:
-                    Bukkit.getServer().getConsoleSender().sendMessage("§7§[aLicenceChecker§7] §cLicence not found!");
-                    break;
-                case 400:
-                    Bukkit.getServer().getConsoleSender().sendMessage("§7§[aLicenceChecker§7] §cLicence already active!");
-                    break;
-                case 200:
-                    Bukkit.getServer().getConsoleSender().sendMessage("§7§[aLicenceChecker§7] §aLicence activated!");
-                    break;
+            post.setEntity(new UrlEncodedFormEntity(urlParameters));
+
+            try (CloseableHttpClient httpClient = HttpClients.createDefault();
+                 CloseableHttpResponse response = httpClient.execute(post)) {
+                switch (response.getStatusLine().getStatusCode()) {
+                    case 401:
+                        Bukkit.getServer().getConsoleSender().sendMessage("§7§[aLicenceChecker§7] §cLicence activation failed!");
+                        break;
+                    case 404:
+                        Bukkit.getServer().getConsoleSender().sendMessage("§7§[aLicenceChecker§7] §cLicence not found!");
+                        break;
+                    case 400:
+                        Bukkit.getServer().getConsoleSender().sendMessage("§7§[aLicenceChecker§7] §cLicence already active!");
+                        break;
+                    case 200:
+                        Bukkit.getServer().getConsoleSender().sendMessage("§7§[aLicenceChecker§7] §aLicence activated!");
+                        break;
+                }
             }
-            con.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
         }
