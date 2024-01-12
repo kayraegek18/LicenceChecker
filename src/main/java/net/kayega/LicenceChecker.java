@@ -23,12 +23,51 @@ public final class LicenceChecker extends JavaPlugin {
         Bukkit.getServer().getConsoleSender().sendMessage("§7§[aLicenceChecker§7] §cLicence Checker Disabled!");
     }
 
+    public static boolean isControlIp(String licenceKey) {
+        String ipAddress = getIP();
+        if (ipAddress == null) {
+            Bukkit.getServer().getConsoleSender().sendMessage("§7§[aLicenceChecker§7] §cIp Address can't fetching, licence activation failed!");
+            return false;
+        }
+
+        try {
+            URL url = new URL("https://api.mineala.com/lisance/ip");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setRequestMethod("POST");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("lisance_key", licenceKey);
+            parameters.put("ip", ipAddress);
+
+            con.setDoOutput(true);
+            DataOutputStream out = new DataOutputStream(con.getOutputStream());
+            out.writeBytes(ParameterStringBuilder.getParamsString(parameters));
+            out.flush();
+            out.close();
+
+            int status = con.getResponseCode();
+            switch (status) {
+                case 200:
+                    return true;
+                case 201:
+                    return false;
+            }
+            con.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return false;
+    }
+
     public static LicenceStatus getLicenceStatus(String licenceKey) {
         String ipAddress = getIP();
         if (ipAddress == null) {
             Bukkit.getServer().getConsoleSender().sendMessage("§7§[aLicenceChecker§7] §cIp Address can't fetching, licence activation failed!");
             return LicenceStatus.ERROR;
         }
+
+        Bukkit.getServer().getConsoleSender().sendMessage("§7§[aLicenceChecker§7] §eLicence status getting...");
 
         try {
             URL url = new URL("https://api.mineala.com/lisance/status");
